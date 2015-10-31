@@ -4,13 +4,15 @@ echo Running tests to verify merging behavior for perforce...
 
 source env.sh
 
-# This should have been already created. If not, run
-# reset.sh
-# then
-# ../fast_perforce_setup/create-admin-account-and-more-security-stuff.sh
-cd wc
+# get to the script directory
+cd "$(dirname "$0")"
 
-alias echo="echo -e"
+# Recreate perforce environment
+./reset.sh
+./server.sh
+
+# Abort on any error
+set -e
 
 uat_branch_name=UatBase
 dev_branch_name=DevBase
@@ -22,11 +24,15 @@ create_dev_branch() {
 	else
 		echo Creating dev branch $dev_branch_name
 		mkdir $dev_branch_name
-		echo "a\n\nb\n\nc\n\nd\n\ne\n" > $dev_branch_name/$config_file_name
+		echo  -e "a\n\nb\n\nc\n\nd\n\ne\n" > $dev_branch_name/$config_file_name
 		p4 add $dev_branch_name/$config_file_name
 		p4 submit -d  "branch_dev_creation"
 	fi
 }
+
+echo "==== Start running the test ===="
+
+cd wc
 
 # Create a DevBase branch
 create_dev_branch
