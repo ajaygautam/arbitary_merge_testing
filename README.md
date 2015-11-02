@@ -8,9 +8,9 @@ This is part of a system to prove suitability of a version control system as bac
 This is purely to validate perforce. Subversion has been ruled out due to [merge limitations](http://paulhammant.com/categories.html#source-control). Git has been ruled out due to lack of fine grained authz controls.
 
 ## Running
-Download all the p4 binaries and add them to path, unless you already have them. Helper script: `fast_perforce_setup/get_binaries.sh`
-
-Checkout https://github.com/paul-hammant/fast_perforce_setup alongside the current repo. Then run `run-the-tests.sh`
+* Checkout https://github.com/paul-hammant/fast_perforce_setup alongside the current repo.
+* Unless you already have them, download all the p4 binaries and add them to path. Helper script: `fast_perforce_setup/get_binaries.sh`
+* (If running for long iterations, you might want to run this nohup, and redirect output to a log file!) Run `run-the-tests.sh`
 
 ## Documentation: Branch setup
 * Branch: DevBase - All changes/config items start here
