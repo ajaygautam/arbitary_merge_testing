@@ -22,10 +22,12 @@ cd "$(dirname "$0")"
 # Abort on any error
 set -e
 
+start_time=`date +%H:%M:%S`
+
 log() {
 	msg="$*"
 	if [[ "$msg" != "" ]]; then
-		echo ===== `date +%H:%M:%S` ===== $msg
+		echo ===== `date +%H:%M:%S` $0 LOG ===== $msg
 	fi
 }
 
@@ -39,7 +41,7 @@ get_branch_name() {
 create_dev_branch() {
 	log Creating dev branch $dev_branch_name
 	mkdir $dev_branch_name
-	echo  -e "a\n\nb\n\nc\n\nd\n\ne\n" > $dev_file
+	echo  -e "a\nb\nc\nd\ne\n" > $dev_file
 	p4 add $dev_file
 	p4 submit -d  "branch_dev_creation"
 }
@@ -118,32 +120,8 @@ add_new_client() {
 	verify_branches_same $dev_branch_name $client_prod_branch
 }
 
-log Start running the test
-
-cd wc
-
-# Create base branches
-create_dev_branch
-merge_all_from_one_branch_to_another $dev_branch_name $uat_branch_name
-verify_branches_same $dev_branch_name $uat_branch_name
-
-# Make mods to Dev
-update_lines_in_file $dev_file
-# merge to Uat
-merge_all_from_one_branch_to_another $dev_branch_name $uat_branch_name
-# Verify Dev and Uat are in sync
-verify_branches_same $dev_branch_name $uat_branch_name
-
-# Create 5 clients. Make Uat and Prod branches for each
-for i in 1 2 3 4 5
-do
-	add_new_client $i
-done
-
-next_client_id=6
-
 week1() {
-	log Running week1
+	log next week
 
 	# make changes to DevBase
 	file=$dev_file
@@ -161,7 +139,7 @@ week1() {
 }
 
 week2() {
-	log Running week2
+	log next week
 
 	# make changes to DevBase
 	file=$dev_file
@@ -189,29 +167,158 @@ week2() {
 	done
 }
 
-week1
-week2
+week3() {
+	week1
+}
 
-# ====> Every week - add new client - migrate from Uat and create prod
-# Week 3 - Make 3 changes to dev. Merge all to Uat
-# Week 4 - Make 5 changes to dev. Merge all to Uat
-# Verify dev and uat are "in sync"
-# Roll out all changes to even indexed client's uat and prod
-# Week 5 - Make 3 changes to dev. Merge all to Uat
-# Week 6 - Make 5 changes to dev. Merge all to Uat
-# Verify dev and uat are "in sync"
-# Roll out all changes to odd indexed client's uat and prod
-# Week 7 - Make 3 changes to dev. Merge all to Uat
-# Week 8 - Make 5 changes to dev. Merge all to Uat
-# Verify dev and uat are "in sync"
-# Roll out all changes to all client's uat and prod
-# Verify dev and uat are "in sync"
-# Make a change in one client (random indexed) prod file
-# Merge change to client's uat
-# Merge change to uat base
-# Merge change to dev base
-# Start from week 1
-# Run the above 500 times
+week4() {
+	log next week
 
+	# make changes to DevBase
+	file=$dev_file
+	p4 open $file
+	perl -pi -e 's/^a/a !!/' $file
+	perl -pi -e 's/^b/b !!/' $file
+	p4 submit -d "lines changed again"
 
-log COMPLETED SUCCESSFULLY
+	# merge all changes to UatBase
+	merge_all_from_one_branch_to_another $dev_branch_name $uat_branch_name
+	# Verify Dev and Uat are in sync
+	verify_branches_same $dev_branch_name $uat_branch_name
+
+  # new client this week
+	add_new_client
+
+	# Roll out all changes to all client's uat and prod
+	skip=1
+	for client in `cat $client_file`
+	do
+		if [[ $skip == 1 ]]; then
+			skip=0
+		else
+			# Roll out all changes to even indexed client's uat and prod
+			skip=1
+			merge_uatbase_to_client_uat_and_prod $client
+
+			# Verify things are still in sync
+			client_prod_branch=`get_branch_name $env_prod $client`
+			verify_branches_same $dev_branch_name $client_prod_branch
+		fi
+	done
+}
+
+week5() {
+	week1
+}
+
+week6() {
+	log next week
+
+	# make changes to DevBase
+	file=$dev_file
+	p4 open $file
+	perl -pi -e 's/^a/a !!/' $file
+	perl -pi -e 's/^b/b !!/' $file
+	p4 submit -d "lines changed again"
+
+	# merge all changes to UatBase
+	merge_all_from_one_branch_to_another $dev_branch_name $uat_branch_name
+	# Verify Dev and Uat are in sync
+	verify_branches_same $dev_branch_name $uat_branch_name
+
+  # new client this week
+	add_new_client
+
+	# Roll out all changes to all client's uat and prod
+	skip=0
+	for client in `cat $client_file`
+	do
+		if [[ $skip == 1 ]]; then
+			skip=0
+		else
+			# Roll out all changes to odd indexed client's uat and prod
+			skip=1
+			merge_uatbase_to_client_uat_and_prod $client
+
+			# Verify things are still in sync
+			client_prod_branch=`get_branch_name $env_prod $client`
+			verify_branches_same $dev_branch_name $client_prod_branch
+		fi
+	done
+}
+
+week7() {
+	week1
+}
+
+week8() {
+	week2
+}
+
+run_test_multiple_times() {
+	run_index=0
+	while [[ $run_index -lt 5 ]]; do
+		run_index=`expr $run_index + 1`
+
+		log Iteration number: $run_index
+
+		week1
+		week2
+		week3
+		week4
+		week5
+		week6
+		week7
+		week8
+
+		# Find a random client
+		client_count=`wc -l clients.txt | tr -s " " | cut -f2 -d" "`
+		random_index=`jot -r 1 1 $client_count`
+		random_client=`head -n $random_index $client_file | tail -n 1`
+		log random client: $random_client
+
+		# Make a change in client's prod file
+		client_prod_file=$env_prod/$random_client/$config_file_name
+		p4 open $client_prod_file
+		perl -pi -e 's/^b/b !!/' $client_prod_file
+		p4 submit -d "lines changed again"
+
+		# Merge change to client's uat
+		client_uat_branch=`get_branch_name $env_uat $client`
+		client_prod_branch=`get_branch_name $env_prod $client`
+		merge_all_from_one_branch_to_another $client_prod_branch $client_uat_branch
+		# Merge change to uat base
+		merge_all_from_one_branch_to_another $client_uat_branch $uat_branch_name
+		# Merge change to dev base
+		merge_all_from_one_branch_to_another $uat_branch_name $dev_branch_name
+	done
+}
+
+log Start running the test
+
+cd wc
+
+# Create base branches
+create_dev_branch
+merge_all_from_one_branch_to_another $dev_branch_name $uat_branch_name
+verify_branches_same $dev_branch_name $uat_branch_name
+
+# Make mods to Dev
+update_lines_in_file $dev_file
+# merge to Uat
+merge_all_from_one_branch_to_another $dev_branch_name $uat_branch_name
+# Verify Dev and Uat are in sync
+verify_branches_same $dev_branch_name $uat_branch_name
+
+# Create 5 clients. Make Uat and Prod branches for each
+for i in 1 2 3 4 5
+do
+	add_new_client $i
+done
+
+next_client_id=6
+
+# This runs the *meat* of the test!
+run_test_multiple_times
+
+log COMPLETED SUCCESSFULLY. Start time: $start_time
