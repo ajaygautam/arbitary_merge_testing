@@ -112,6 +112,7 @@ add_new_client() {
 	fi
 
 	client=client$client_number
+	log adding client $client
 	echo $client >> $client_file
 
 	merge_uatbase_to_client_uat_and_prod $client
@@ -284,8 +285,8 @@ run_test_multiple_times() {
 		p4 submit -d "lines changed again"
 
 		# Merge change to client's uat
-		client_uat_branch=`get_branch_name $env_uat $client`
-		client_prod_branch=`get_branch_name $env_prod $client`
+		client_uat_branch=`get_branch_name $env_uat $random_client`
+		client_prod_branch=`get_branch_name $env_prod $random_client`
 		merge_all_from_one_branch_to_another $client_prod_branch $client_uat_branch
 		# Merge change to uat base
 		merge_all_from_one_branch_to_another $client_uat_branch $uat_branch_name
