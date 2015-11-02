@@ -8,20 +8,18 @@ This is part of a system to prove suitability of a version control system as bac
 This is purely to validate perforce. Subversion has been ruled out due to [merge limitations](http://paulhammant.com/categories.html#source-control). Git has been ruled out due to lack of fine grained authz controls.
 
 ## Running
-Checkout https://github.com/paul-hammant/fast_perforce_setup alongside the current repo.
-* `reset.sh` - removes all repo data, (localhost)server data, etc...
-* `server.sh` - creates a server environment locally, starts p4d, and sets  things up to run the test
-* `run.sh` - THE test
-* Do remember to download all the p4 binaries and add them to path, unless you already have them. Helper script: `fast_perforce_setup/get_binaries.sh`
+Checkout https://github.com/paul-hammant/fast_perforce_setup alongside the current repo. Then run `run-the-tests.sh`
 
-## Setup
+Do remember to download all the p4 binaries and add them to path, unless you already have them. Helper script: `fast_perforce_setup/get_binaries.sh`
+
+## Documentation: Branch setup
 * Branch: DevBase - All changes/config items start here
 * Branch: UatBase - All changes move from DevBase out here, where they are propagates to all client UAT environments
 * Branch: Testing/Ajay/Uat - Config for personal UAT environments for testing / staging / etc.
 * Branch: Clients/CLIENT1/Uat - Client specific Uat config for the client's UAT environment
 * Branch: Clients/CLIENT2/Prod - Client specifc Prod config for the client's PROD environment
 
-## The "test"
+## Documentation: The "test"
 * Create a DevBase branch - Add 3 files - xml, json, csv
 * Create a UatBase branch - from the dev branch
 * Make 10 mods to Dev, merge each to Uat
