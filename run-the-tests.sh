@@ -7,6 +7,7 @@ dev_file=$dev_branch_name/$config_file_name
 client_file=clients.txt
 env_uat=Uat
 env_prod=Prod
+number_of_iterations=5
 
 echo Running tests to verify merging behavior for perforce...
 
@@ -28,6 +29,34 @@ log() {
 	msg="$*"
 	if [[ "$msg" != "" ]]; then
 		echo ===== `date +%H:%M:%S` $0 LOG ===== $msg
+	fi
+}
+
+get_random_using_jot() {
+	upper_limit=$1
+
+	jot -r 1 1 $upper_limit
+}
+
+get_random_using_shuf() {
+	upper_limit=$1
+
+	shuf -n 1 -i 1-$upper_limit
+}
+
+# There must be a cleaner / earier way to do this...
+get_randomizer_to_use() {
+	found=`which jot || echo no_jot`
+	if [[ $found == *"no_jot"* ]]; then
+		found=`which shuf || echo no_shuf`
+		if [[ $found == *"no_shuf"* ]]; then
+			log Unable to locate a randomizer. I support jot OR shuf. Get one of these.
+			exit 3
+		else
+			echo get_random_using_shuf
+		fi
+	else
+		echo get_random_using_jot
 	fi
 }
 
@@ -257,8 +286,19 @@ week8() {
 }
 
 run_test_multiple_times() {
+	# locate a randomizer
+	log locating randomizer
+	randomizer=`get_randomizer_to_use`
+	log found randomizer: $randomizer
+	if [[ "$randomizer" == "" ]]; then
+		log Unable to locate a randomizer!
+		exit 1
+	else
+		log using randomizer $randomizer
+	fi
+
 	run_index=0
-	while [[ $run_index -lt 5 ]]; do
+	while [[ $run_index -lt $number_of_iterations ]]; do
 		run_index=`expr $run_index + 1`
 
 		log Iteration number: $run_index
@@ -274,7 +314,7 @@ run_test_multiple_times() {
 
 		# Find a random client
 		client_count=`wc -l clients.txt | tr -s " " | cut -f2 -d" "`
-		random_index=`jot -r 1 1 $client_count`
+		random_index=`$randomizer $client_count`
 		random_client=`head -n $random_index $client_file | tail -n 1`
 		log random client: $random_client
 
