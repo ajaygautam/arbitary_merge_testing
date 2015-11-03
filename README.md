@@ -8,6 +8,8 @@ This is part of a system to prove suitability of a version control system as bac
 This is purely to validate perforce. Subversion has been ruled out due to [merge limitations](http://paulhammant.com/categories.html#source-control). Git has been ruled out due to lack of fine grained authz controls.
 
 ## Running
+* Install dependents
+  * `moreutils` - this provides `sponge`
 * Checkout https://github.com/paul-hammant/fast_perforce_setup alongside the current repo.
 * Unless you already have them, download all the p4 binaries and add them to path. Helper script: `fast_perforce_setup/get_binaries.sh`
 * (If running for long iterations, you might want to run this nohup, and redirect output to a log file!) Run `run-the-tests.sh`
@@ -20,27 +22,27 @@ This is purely to validate perforce. Subversion has been ruled out due to [merge
 * Branch: Clients/CLIENT2/Prod - Client specifc Prod config for the client's PROD environment
 
 ## Documentation: The "test"
-* Create a DevBase branch - Add 3 files - xml, json, csv
+* Create a DevBase branch with a config file
 * Create a UatBase branch - from the dev branch
-* Make 10 mods to Dev, merge each to Uat
+* Make mods to Dev, merge each to Uat
 * Verify Dev and Uat are in sync (nothing to merge. No ghost merges)
 * Create 5 clients. Make Uat and Prod branches for each
 * ====> Every week - add new client - migrate from Uat and create prod
-* Week 1 - Make 3 changes to dev. Merge all to Uat
-* Week 2 - Make 5 changes to dev. Merge all to Uat
+* Week 1 - Make changes to dev. Merge all to Uat
+* Week 2 - Make changes to dev. Merge all to Uat
 * Verify dev and uat are "in sync"
 * Roll out all changes to all client's uat and prod
 * Verify dev and uat are "in sync"
-* Week 3 - Make 3 changes to dev. Merge all to Uat
-* Week 4 - Make 5 changes to dev. Merge all to Uat
+* Week 3 - Make changes to dev. Merge all to Uat
+* Week 4 - Make changes to dev. Merge all to Uat
 * Verify dev and uat are "in sync"
 * Roll out all changes to even indexed client's uat and prod
-* Week 5 - Make 3 changes to dev. Merge all to Uat
-* Week 6 - Make 5 changes to dev. Merge all to Uat
+* Week 5 - Make changes to dev. Merge all to Uat
+* Week 6 - Make changes to dev. Merge all to Uat
 * Verify dev and uat are "in sync"
 * Roll out all changes to odd indexed client's uat and prod
-* Week 7 - Make 3 changes to dev. Merge all to Uat
-* Week 8 - Make 5 changes to dev. Merge all to Uat
+* Week 7 - Make changes to dev. Merge all to Uat
+* Week 8 - Make changes to dev. Merge all to Uat
 * Verify dev and uat are "in sync"
 * Roll out all changes to all client's uat and prod
 * Verify dev and uat are "in sync"
@@ -50,4 +52,3 @@ This is purely to validate perforce. Subversion has been ruled out due to [merge
 * Merge change to dev base
 * Start from week 1
 * Run the above 500 times
-
