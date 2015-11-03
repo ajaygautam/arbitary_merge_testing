@@ -9,6 +9,12 @@ env_uat=Uat
 env_prod=Prod
 number_of_iterations=5
 
+which sponge > /dev/null
+if [[ $? -ne 0 ]]; then
+	echo This utility needs sponge. please install moreutils
+	exit 2
+fi
+
 echo Running tests to verify merging behavior for perforce...
 
 source env.sh
@@ -313,7 +319,7 @@ run_test_multiple_times() {
 		week8
 
 		# Find a random client
-		client_count=`wc -l clients.txt | tr -s " " | cut -f2 -d" "`
+		client_count=`wc -l < clients.txt | tr -d " "`
 		random_index=`$randomizer $client_count`
 		random_client=`head -n $random_index $client_file | tail -n 1`
 		log random client: $random_client
