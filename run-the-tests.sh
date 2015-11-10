@@ -303,11 +303,18 @@ run_test_multiple_times() {
 		log using randomizer $randomizer
 	fi
 
+	you=$(p4 user -o | grep "^User:" | cut -f 2)
+	pass=qwer1234
+
 	run_index=0
 	while [[ $run_index -lt $number_of_iterations ]]; do
 		run_index=`expr $run_index + 1`
 
 		log Iteration number: $run_index
+
+		# logout and login back into perforce
+		p4 logout
+		echo "$pass" | p4 -u $you login
 
 		week1
 		week2
